@@ -2,7 +2,6 @@
 using CmsShoppingCart.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,7 +45,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
         public IActionResult Create() =>  View();
 
 
-        //POST admin/pages/details/X
+        //POST admin/pages/Create/X
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Page page)
@@ -116,7 +115,6 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             }
 
             return View(page);
-
         }
 
         //GET admin/pages/delete/X
