@@ -125,9 +125,9 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
         public async Task<IActionResult> Reorder(int[] id)
         {
             int count = 1;
-            foreach (var pageId in id)
+            foreach (var categoryId in id)
             {
-                Category category = await _context.Categories.FindAsync(pageId);
+                Category category = await _context.Categories.FindAsync(categoryId);
                 category.Sorting = count;
                 _context.Update(category);
                 await _context.SaveChangesAsync();
