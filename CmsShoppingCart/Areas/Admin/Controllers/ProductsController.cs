@@ -26,9 +26,15 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
         }
 
         //Get: /admin/Products/
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int p = 1)
         {
-            return View(await _context.Products.OrderByDescending(x => x.Id).Include(x => x.Category).ToListAsync());
+            int pageSize = 6;
+
+            var products = _context.Products.OrderByDescending(x => x.Id)
+                .Include(x => x.Category).Skip((p - 1) * pageSize)
+                .Take(pageSize);
+
+            return View(await products.ToListAsync());
         }
 
         //GET admin/products/create/
