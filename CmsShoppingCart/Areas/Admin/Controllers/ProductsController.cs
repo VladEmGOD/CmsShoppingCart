@@ -177,5 +177,36 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
 
         }
 
+        //GET admin/product/delete/X
+        public async Task<IActionResult> Delete(int id)
+        {
+            Product product = await _context.Products.FindAsync(id);
+
+            if (product == null)
+            {
+                TempData["Error"] = "The product does not exist";
+
+            }
+            else
+            {
+                if (!string.Equals(product.Image, "noimage.png"))
+                {
+                    string uploadDir = Path.Combine(webHostEnvironment.WebRootPath, "media/products");
+                    string oldImagePath = Path.Combine(uploadDir, product.Image);
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+
+                _context.Products.Remove(product);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "The product has been deleted";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+
     }
 }
