@@ -36,15 +36,30 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
 
             ViewBag.PageNumber = p;
             ViewBag.PageRange = pageSize;
-            ViewBag.TotlaPages = (int)Math.Ceiling((decimal)_context.Products.Count()/ pageSize);
+            ViewBag.TotlaPages = (int)Math.Ceiling((decimal)_context.Products.Count() / pageSize);
 
             return View(await products.ToListAsync());
         }
 
-        //GET admin/products/create/
-        public IActionResult Create() 
+        //GET admin/products/details/X
+        public async Task<IActionResult> Details(int id)
         {
-            ViewBag.CategoryId = new SelectList(_context.Categories.OrderBy(x => x.Sorting),"Id","Name");
+            Product product = await _context.Products.Include(x => x.Category).FirstOrDefaultAsync(x => x.Id == id);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return View(product);
+        }
+
+
+
+        //GET admin/products/create/
+        public IActionResult Create()
+        {
+            ViewBag.CategoryId = new SelectList(_context.Categories.OrderBy(x => x.Sorting), "Id", "Name");
 
             return View();
         }
@@ -70,7 +85,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
 
                 string imageName = "noimage.png";
 
-                if (product.ImageUpload != null) 
+                if (product.ImageUpload != null)
                 {
                     string uploadDir = Path.Combine(webHostEnvironment.WebRootPath, "media/products");
                     imageName = Guid.NewGuid().ToString() + "_" + product.ImageUpload.FileName;
@@ -94,17 +109,73 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
 
         }
 
-        //GET admin/products/details/X
-        public async Task<IActionResult> Details(int id)
+        //GET admin/products/edit/X
+        public async Task<IActionResult> Edit(int id)
         {
-            Product product = await _context.Products.Include(x => x.Category).FirstOrDefaultAsync(x => x.Id == id);
+            Product product = await _context.Products.FindAsync(id);
 
             if (product == null)
             {
                 return NotFound();
             }
 
+            ViewBag.CategoryId = new SelectList(_context.Categories.OrderBy(x => x.Sorting), "Id", "Name", product.CategoryId);
+
             return View(product);
         }
+
+        //POST admin/products/Edit/Id
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Product product)
+        {
+            ViewBag.CategoryId = new SelectList(_context.Categories.OrderBy(x => x.Sorting), "Id", "Name", product.CategoryId);
+
+            if (ModelState.IsValid)
+            {
+                product.Slug = product.Name.ToLower().Replace(" ", "-");
+
+                var slug = await _context.Products.Where(X=> X.Id != id).FirstOrDefaultAsync(x => x.Slug == product.Slug);
+
+                if (slug != null)
+                {
+                    ModelState.AddModelError("", "The product already exists!");
+                    return View(product);
+                }
+
+
+                if (product.ImageUpload != null)
+                {
+                    string uploadDir = Path.Combine(webHostEnvironment.WebRootPath, "media/products");
+
+                    if (!string.Equals(product.Image, "noimage.png")) 
+                    {
+                        string oldImagePath = Path.Combine(uploadDir, product.Image);
+                        if (System.IO.File.Exists(oldImagePath)) 
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
+                    string imageName = Guid.NewGuid().ToString() + "_" + product.ImageUpload.FileName;
+                    string filePAth = Path.Combine(uploadDir, imageName);
+                    FileStream fs = new FileStream(filePAth, FileMode.Create);
+                    await product.ImageUpload.CopyToAsync(fs);
+                    fs.Close();
+                    product.Image = imageName;
+                }
+
+                _context.Update(product);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "The product has been edited";
+
+                return RedirectToAction("index");
+            }
+
+            return View(product);
+
+        }
+
     }
 }

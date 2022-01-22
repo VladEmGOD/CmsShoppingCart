@@ -20,7 +20,7 @@ namespace CmsShoppingCart.Models
         [Required, MinLength(4, ErrorMessage = "Minimum lenght is 4")]
         public string Description { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
+        [Column(TypeName = "decimal(18, 2)")]
         public decimal Price { get; set; }
         [Display(Name = "Category")]
         [Range(1, int.MaxValue, ErrorMessage = "You must choose a category")]
