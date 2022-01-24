@@ -18,9 +18,8 @@
                 @item.Price.ToString("C2")
             </p>
             <p>
-                <a href="#" class="btn-primary p-1">Add to cart</a>
-            </p>
-        </div>
+                <a asp-controller="Cart" asp-action="Add" asp-route-id="@item.Id" class="btn-primary p-1">Add to cart</a>
+            </div>
     }
 
     @if (ViewBag.TotlaPages > 1) 
