@@ -55,6 +55,7 @@ namespace CmsShoppingCart.Controllers
             ViewBag.PageRange = pageSize;
             ViewBag.TotlaPages = (int)Math.Ceiling((decimal)_context.Products.Where(x => x.CategoryId == category.Id).Count() / pageSize);
             ViewBag.CategoryName = category.Name;
+            ViewBag.CategorySlug = category.Slug;
 
             return View(await products.ToListAsync());
         }
