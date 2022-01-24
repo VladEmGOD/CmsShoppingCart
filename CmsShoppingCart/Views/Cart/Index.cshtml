@@ -4,8 +4,6 @@
     ViewData["Title"] = "Card overview";
 }
 
-<h1>Card overview</h1>
-
 @if (Model.CartItems.Count > 0)
 {
 
@@ -38,8 +36,8 @@
 
     <tr>
         <td class="text-right" colspan="4">
-            <a asp-action="Clear" class="btm bg-danger">Clear Cart</a>
-            <a href="#" class="btm bg-primary">Cheackout</a>
+            <a asp-action="Clear" class="btn btn-sm btn-danger">Clear Cart</a>
+            <a href="#" class="btn btn-sm btn-primary">Cheackout</a>
         </td>
     </tr>
 
