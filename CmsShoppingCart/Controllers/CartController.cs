@@ -80,5 +80,21 @@ namespace CmsShoppingCart.Controllers
             return RedirectToAction("Index");
         }
 
+        public IActionResult Remove(int id)
+        {
+            List<CartItem> cart = HttpContext.Session.GetJson<List<CartItem>>("Cart");
+
+            cart.RemoveAll(x => x.ProductId == id); 
+
+            HttpContext.Session.SetJson("Cart", cart);
+
+            if (cart.Count == 0)
+            {
+                HttpContext.Session.Remove("Cart");
+            }
+
+            return RedirectToAction("Index");
+        }
+
     }
 }
