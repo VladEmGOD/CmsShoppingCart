@@ -55,6 +55,7 @@ namespace CmsShoppingCart.Controllers
             return RedirectToAction("Index");
         }
 
+        //GET /cart/decrease/Id
         public IActionResult Decrease(int id)
         {
             List<CartItem> cart = HttpContext.Session.GetJson<List<CartItem>>("Cart");
@@ -80,6 +81,7 @@ namespace CmsShoppingCart.Controllers
             return RedirectToAction("Index");
         }
 
+        //GET /cart/remove/Id
         public IActionResult Remove(int id)
         {
             List<CartItem> cart = HttpContext.Session.GetJson<List<CartItem>>("Cart");
@@ -92,6 +94,14 @@ namespace CmsShoppingCart.Controllers
             {
                 HttpContext.Session.Remove("Cart");
             }
+
+            return RedirectToAction("Index");
+        }
+
+        //GET /cart/clear
+        public IActionResult Clear()
+        {
+            HttpContext.Session.Remove("Cart");
 
             return RedirectToAction("Index");
         }
