@@ -55,7 +55,7 @@ namespace CmsShoppingCart.Controllers
             return RedirectToAction("Index");
         }
 
-        public async Task<IActionResult> Decrease(int id)
+        public Task<IActionResult> Decrease(int id)
         {
             List<CartItem> cart = HttpContext.Session.GetJson<List<CartItem>>("Cart");
 
