@@ -108,7 +108,9 @@ namespace CmsShoppingCart.Controllers
         {
             HttpContext.Session.Remove("Cart");
 
-            return RedirectToAction("Index");
+            //return RedirectToAction("Page", "Pages");
+            //return Redirect("/");
+            return Redirect(Request.Headers["Referer"].ToString());
         }
 
     }
