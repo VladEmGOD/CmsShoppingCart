@@ -14,11 +14,15 @@ namespace CmsShoppingCart.Controllers
     {
         private readonly UserManager<AppUser> userManeger;
         private readonly SignInManager<AppUser> _signInManager;
+        private IPasswordHasher<AppUser> passwordHasher;
 
-        public AccountController(SignInManager<AppUser> singInManager, UserManager<AppUser> userManeger)
+        public AccountController(SignInManager<AppUser> singInManager,
+                                UserManager<AppUser> userManeger,
+                                IPasswordHasher<AppUser> passwordHasher)
         {
             this.userManeger = userManeger;
             this._signInManager = singInManager;
+            this.passwordHasher = passwordHasher;
         }
 
         //GET /account/register
@@ -97,6 +101,42 @@ namespace CmsShoppingCart.Controllers
         {
             await _signInManager.SignOutAsync();
             return Redirect("/");
+        }
+
+        //GET /account/edit
+        public async Task<IActionResult> Edit()
+        {
+            AppUser appUser = await userManeger.FindByNameAsync(User.Identity.Name);
+            UserEdit user = new UserEdit(appUser);
+
+            return View(user);
+        }
+
+        //POST /account/edit
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(UserEdit user)
+        {
+            AppUser appUser = await userManeger.FindByNameAsync(User.Identity.Name);
+
+            if (ModelState.IsValid)
+            {
+                appUser.Email = user.Email;
+
+                if (user.Password != null) 
+                {
+                    appUser.PasswordHash = passwordHasher.HashPassword(appUser, user.Password);
+                }
+
+                IdentityResult result = await userManeger.UpdateAsync(appUser);
+                if (result.Succeeded) 
+                {
+                    TempData["Success"] = "Your information has been edited!";
+                }
+            }
+
+            return View();
         }
     }
 }

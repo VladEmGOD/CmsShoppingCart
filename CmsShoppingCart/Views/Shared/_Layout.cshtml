@@ -25,6 +25,11 @@
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
                         <li class="nav-item">
+                            <a class="btn btn-light border border-dark"
+                                asp-controller="Account" asp-action="Edit">My Account</a>
+                        </li>
+                        
+                        <li class="nav-item  ml-1">
                             <a class="btn btn-danger"
                                 asp-controller="Account" asp-action="Logout">Log out</a>
                         </li>
@@ -49,6 +54,7 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+            <partial name="_NotificationPartial"/>
             <div class="row">
                 <div class="col-3">
                     @await Component.InvokeAsync("Categories")
