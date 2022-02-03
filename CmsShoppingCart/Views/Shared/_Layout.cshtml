@@ -18,8 +18,31 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                       @await Component.InvokeAsync("MainMenu")
+                        @await Component.InvokeAsync("MainMenu")
                     </ul>
+
+                    <ul class="navbar-nav flex-grow-1 justify-content-end">
+                        @if (User?.Identity?.IsAuthenticated ?? false)
+                        {
+                        <li class="nav-item">
+                            <a class="btn btn-danger"
+                                asp-controller="Account" asp-action="Logout">Log out</a>
+                        </li>
+                        }
+                        else
+                        {
+                        <li class="nav-item">
+                            <a class="btn btn-light border border-secondary rounded-3" 
+                               asp-controller="Account" asp-action="Login">Login</a>
+                        </li>
+
+                        <li class="nav-item ml-1">
+                            <a class="btn btn-primary" asp-controller="Account" asp-action="Register">Register</a>
+                        </li>
+                        }
+                    </ul>
+
+
                 </div>
             </div>
         </nav>
