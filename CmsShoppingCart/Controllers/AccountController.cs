@@ -10,9 +10,8 @@ namespace CmsShoppingCart.Controllers
     [Authorize]
     public class AccountController : Controller
     {
-        public string Index()
-        {
-            return "test string";
-        }
+        //GET /account/register
+        [AllowAnonymous]
+        public IActionResult Register() => View();
     }
 }
