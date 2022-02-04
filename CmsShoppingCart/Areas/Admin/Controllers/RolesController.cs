@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,5 +26,26 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
         
         //GET /admin/roles/create
         public IActionResult Create() => View();
+
+        //POST /admin/roles/create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([MinLength(2), Required] string name) 
+        {
+            if (ModelState.IsValid) 
+            {
+                IdentityResult result = await roleManager.CreateAsync(new IdentityRole(name));
+
+                if (result.Succeeded) 
+                {
+                    TempData["Success"] = "The Role has been created successfully";
+                    return Redirect("Index"); 
+                }
+                else foreach (IdentityError error in result.Errors) ModelState.AddModelError("", error.Description);
+            }
+
+            ModelState.AddModelError("", "Minimum Length is 2");
+            return View();
+        }
     }
 }
