@@ -34,6 +34,31 @@
                             <a class="nav-link text-dark" asp-area="Admin" asp-controller="Roles" asp-action="Index">Roles</a>
                         </li>
                     </ul>
+
+                    <ul class="navbar-nav flex-grow-1 justify-content-end">
+                        @if (User?.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item">
+                                <a class="btn btn-light border border-dark"
+                                   asp-area="" asp-controller="Account" asp-action="Edit">My Account</a>
+                            </li>
+
+                            <li class="nav-item  ml-1">
+                                <a class="btn btn-danger"
+                                   asp-area="" asp-controller="Account" asp-action="Logout">Log out</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="btn btn-light border border-secondary rounded-3"
+                                   asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
+
+                            <li class="nav-item ml-1">
+                                <a class="btn btn-primary" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+                            </li>
+                        }
                 </div>
             </div>
         </nav>
