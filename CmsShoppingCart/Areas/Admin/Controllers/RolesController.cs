@@ -20,6 +20,10 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             this.userManager = userManager;
         }
 
-        public IActionResult Index() => View(roleManager.Roles);
+        //GET /admin/roles
+        public IActionResult Index() => View(roleManager.Roles); 
+        
+        //GET /admin/roles/create
+        public IActionResult Create() => View();
     }
 }
