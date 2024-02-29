@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -26,7 +25,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
         }
 
         //GET /admin/roles
-        public IActionResult Index() => View(roleManager.Roles);
+        public IActionResult Index() => View(roleManager.Roles.ToList());
 
         //GET /admin/roles/create
         public IActionResult Create() => View();
@@ -51,6 +50,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             ModelState.AddModelError("", "Minimum Length is 2");
             return View();
         }
+
         //GET /admin/roles/edit/S
         public async Task<IActionResult> Edit(string id)
         {
@@ -59,7 +59,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             List<AppUser> members = new List<AppUser>();
             List<AppUser> nonMembers = new List<AppUser>();
 
-            foreach (AppUser user in userManager.Users)
+            foreach (AppUser user in userManager.Users.ToList())
             {
                 var list = await userManager.IsInRoleAsync(user, role.Name) ? members : nonMembers;
                 list.Add(user);

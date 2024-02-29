@@ -2,16 +2,11 @@ using CmsShoppingCart.Infrastucture;
 using CmsShoppingCart.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CmsShoppingCart
 {
@@ -34,6 +29,7 @@ namespace CmsShoppingCart
                 //options.IdleTimeout = TimeSpan.FromDays(2);
             });
 
+            services.AddLogging();
             services.AddRouting(options => options.LowercaseUrls = true);
             services.AddControllersWithViews();
             services.AddDbContext<CmsShoppingCartContext>
@@ -48,8 +44,9 @@ namespace CmsShoppingCart
                 options.Password.RequireDigit = false;
 
             })
-                    .AddEntityFrameworkStores<CmsShoppingCartContext>()
-                    .AddDefaultTokenProviders();
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<CmsShoppingCartContext>()
+                .AddDefaultTokenProviders();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

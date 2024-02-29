@@ -30,12 +30,18 @@ namespace CmsShoppingCart
                     throw;
                 }
             }
-
-                host.Run();
+            
+            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(options => 
+                {
+                    options.ClearProviders();
+                    options.AddSimpleConsole(options => options.IncludeScopes = true);
+                    options.AddEventLog();
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

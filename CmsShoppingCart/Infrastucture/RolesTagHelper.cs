@@ -14,13 +14,12 @@ namespace CmsShoppingCart.Infrastucture
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly UserManager<AppUser> userManager;
 
-        public object AppUSer { get; private set; }
-
         public RolesTagHelper(RoleManager<IdentityRole> roleManager, UserManager<AppUser> userManager)
         {
             this.roleManager = roleManager;
             this.userManager = userManager;
         }
+
         [HtmlAttributeName("user-role")]
         public string RoleId { get; set; }
 
@@ -31,7 +30,9 @@ namespace CmsShoppingCart.Infrastucture
 
             if (role != null) 
             {
-                foreach (var user in userManager.Users) 
+                var users = userManager.Users.ToList();
+
+                foreach (var user in users) 
                 {
                     if (user != null && await userManager.IsInRoleAsync(user, role.Name)) 
                     {
