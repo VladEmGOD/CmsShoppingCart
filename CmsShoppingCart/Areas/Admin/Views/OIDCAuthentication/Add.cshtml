@@ -1,0 +1,42 @@
+﻿@model CmsShoppingCart.Models.Authentication.OIDC.IdentityProvider;
+
+@{
+    ViewData["Title"] = "Add new OIDC provider";
+}
+
+<h1>Add new OIDC provider</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-10">
+        <form asp-action="AddOrUpdate">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="ProviderName" class="control-label">Provider name</label>
+                <input asp-for="ProviderName" class="form-control" />
+                <span asp-validation-for="ProviderName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ApplicationId" class="control-label">Application (client) Id:</label>
+                <input asp-for="ApplicationId" class="form-control" />
+                <span asp-validation-for="ApplicationId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ProviderUrl" class="control-label">Provider Url</label>
+                <input asp-for="ProviderUrl" class="form-control" />
+                <span asp-validation-for="ProviderUrl" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Edit" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>

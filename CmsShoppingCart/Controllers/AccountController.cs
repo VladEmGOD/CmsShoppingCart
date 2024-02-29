@@ -1,10 +1,8 @@
 ﻿using CmsShoppingCart.Models;
+using CmsShoppingCart.Models.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace CmsShoppingCart.Controllers
@@ -13,7 +11,7 @@ namespace CmsShoppingCart.Controllers
     public class AccountController : Controller
     {
         private readonly UserManager<AppUser> userManeger;
-        private readonly SignInManager<AppUser> _signInManager;
+        private readonly SignInManager<AppUser> signInManager;
         private IPasswordHasher<AppUser> passwordHasher;
 
         public AccountController(SignInManager<AppUser> singInManager,
@@ -21,7 +19,7 @@ namespace CmsShoppingCart.Controllers
                                 IPasswordHasher<AppUser> passwordHasher)
         {
             this.userManeger = userManeger;
-            this._signInManager = singInManager;
+            this.signInManager = singInManager;
             this.passwordHasher = passwordHasher;
         }
 
@@ -85,9 +83,11 @@ namespace CmsShoppingCart.Controllers
                 AppUser appUser = await userManeger.FindByEmailAsync(login.Email);
                 if (appUser != null) 
                 {
-                    Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager
+                    Microsoft.AspNetCore.Identity.SignInResult result = await signInManager
                         .PasswordSignInAsync(appUser, login.Password, false, false);
-                    if (result.Succeeded) return Redirect(login.ReturnUrl ?? "/");
+                    
+                    if (result.Succeeded) 
+                        return Redirect(login.ReturnUrl ?? "/");
                 }
 
                 ModelState.AddModelError("", "Login failed, wrong credentials");
@@ -99,7 +99,7 @@ namespace CmsShoppingCart.Controllers
         //GET /account/login
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
+            await signInManager.SignOutAsync();
             return Redirect("/");
         }
 

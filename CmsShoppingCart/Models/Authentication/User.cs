@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CmsShoppingCart.Models
+namespace CmsShoppingCart.Models.Authentication
 {
     public class User
     {
