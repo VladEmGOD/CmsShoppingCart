@@ -1,12 +1,13 @@
-﻿using System;
+﻿using CmsShoppingCart.WebApp.Models.Authentication.OIDC;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CmsShoppingCart.Models.Authentication
+namespace CmsShoppingCart.WebApp.Models.Authentication
 {
-    public class Login
+    public class LoginViewModel
     {
         [Required, EmailAddress]
         public string Email { get; set; }
@@ -14,5 +15,7 @@ namespace CmsShoppingCart.Models.Authentication
         public string Password { get; set; }
 
         public string ReturnUrl { get; set; }
+
+        public IEnumerable<IdentityProviderViewModel> IdentityProviders { get; set; } = new List<IdentityProviderViewModel>();
     }
 }

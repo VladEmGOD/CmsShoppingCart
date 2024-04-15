@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace CmsShoppingCart.Migrations
+namespace CmsShoppingCart.WebApp.Migrations
 {
     public partial class IdentityCreate : Migration
     {

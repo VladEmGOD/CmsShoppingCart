@@ -1,14 +1,24 @@
-using CmsShoppingCart.Infrastucture;
-using CmsShoppingCart.Models;
+using CmsShoppingCart.WebApp.Infrastucture;
+using CmsShoppingCart.WebApp.Infrastucture.Middlewares;
+using CmsShoppingCart.WebApp.Infrastucture.Providers;
+using CmsShoppingCart.WebApp.Infrastucture.Services;
+using CmsShoppingCart.WebApp.Models;
+
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
-namespace CmsShoppingCart
+
+namespace CmsShoppingCart.WebApp
 {
     public class Startup
     {
@@ -32,9 +42,36 @@ namespace CmsShoppingCart
             services.AddLogging();
             services.AddRouting(options => options.LowercaseUrls = true);
             services.AddControllersWithViews();
+
+            services.AddScoped<IMediaImageProvider, MediaImageProvider>();
+            services.AddScoped<IIdentityProvidersManager, IdentityProvidersManager>();
+            services.AddTransient<OIDCIdentityProvidersWiddleware>();
+
             services.AddDbContext<CmsShoppingCartContext>
                 (options => options.UseSqlServer
             (Configuration.GetConnectionString("CmsShoppingCartContext")));
+
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+
+                //options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                //options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                //options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+            })
+                .AddCookie();
+                //.AddOpenIdConnect(o =>
+                //    {
+                //        o.Authority = "https://dev-zax1yy8k40jn3rc4.us.auth0.com";
+                //        o.ClientId = "yJ8KAQC6DlugYRFhiZnmrDW26j3FoKGg";
+                //        o.ClientSecret = "PmkPu7SE3Mc-FIkBoD-lYqr02uUIqwithtErcdhz5qkaCF2bDeOIV8Vj5BcMGTTY";
+                //        o.MapInboundClaims = false;
+
+                //        o.Scope.Add("email");
+                //    });
 
             services.AddIdentity<AppUser, IdentityRole>(options => {
                 options.Password.RequiredLength = 4;
@@ -47,10 +84,11 @@ namespace CmsShoppingCart
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<CmsShoppingCartContext>()
                 .AddDefaultTokenProviders();
-        }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+            services.AddSingleton<OpenIdConnectPostConfigureOptions>();
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -69,6 +107,8 @@ namespace CmsShoppingCart
 
             app.UseSession();
 
+            app.UseMiddleware<OIDCIdentityProvidersWiddleware>();
+            
             app.UseAuthentication();
             app.UseAuthorization();
 

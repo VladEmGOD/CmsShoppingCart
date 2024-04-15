@@ -1,5 +1,6 @@
-﻿using CmsShoppingCart.Infrastucture;
-using CmsShoppingCart.Models;
+﻿using CmsShoppingCart.WebApp.Infrastucture;
+using CmsShoppingCart.WebApp.Infrastucture.Providers;
+using CmsShoppingCart.WebApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CmsShoppingCart.Areas.Admin.Controllers
+namespace CmsShoppingCart.WebApp.Areas.Admin.Controllers
 {
     [Authorize(Roles = "Admin")]
     [Area("Admin")]
@@ -19,12 +20,15 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
     {
         private readonly CmsShoppingCartContext _context;
 
-        private readonly IWebHostEnvironment webHostEnvironment;
+        private readonly IMediaImageProvider imageProvider;
 
-        public ProductsController(CmsShoppingCartContext context, IWebHostEnvironment webHostEnvironment)
+        private string ImagesCatalogName = "products";
+        private string DefaultImageName = "noimage.png";
+
+        public ProductsController(CmsShoppingCartContext context, IMediaImageProvider imageProvider)
         {
             _context = context;
-            this.webHostEnvironment = webHostEnvironment;
+            this.imageProvider = imageProvider;
         }
 
         //Get: /admin/Products/
@@ -62,7 +66,6 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
         public IActionResult Create()
         {
             ViewBag.CategoryId = new SelectList(_context.Categories.OrderBy(x => x.Sorting), "Id", "Name");
-
             return View();
         }
 
@@ -85,19 +88,10 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
                     return View(product);
                 }
 
-                string imageName = "noimage.png";
-
                 if (product.ImageUpload != null)
-                {
-                    string uploadDir = Path.Combine(webHostEnvironment.WebRootPath, "media/products");
-                    imageName = Guid.NewGuid().ToString() + "_" + product.ImageUpload.FileName;
-                    string filePAth = Path.Combine(uploadDir, imageName);
-                    FileStream fs = new FileStream(filePAth, FileMode.Create);
-                    await product.ImageUpload.CopyToAsync(fs);
-                    fs.Close();
-                }
-
-                product.Image = imageName;
+                    product.Image = await imageProvider.SaveAsync(product.ImageUpload, ImagesCatalogName);
+                else 
+                    product.Image = DefaultImageName;
 
                 _context.Add(product);
                 await _context.SaveChangesAsync();
@@ -122,7 +116,6 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             }
 
             ViewBag.CategoryId = new SelectList(_context.Categories.OrderBy(x => x.Sorting), "Id", "Name", product.CategoryId);
-
             return View(product);
         }
 
@@ -137,7 +130,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             {
                 product.Slug = product.Name.ToLower().Replace(" ", "-");
 
-                var slug = await _context.Products.Where(X=> X.Id != id).FirstOrDefaultAsync(x => x.Slug == product.Slug);
+                var slug = await _context.Products.Where(X => X.Id != id).FirstOrDefaultAsync(x => x.Slug == product.Slug);
 
                 if (slug != null)
                 {
@@ -145,33 +138,16 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
                     return View(product);
                 }
 
-
-                if (product.ImageUpload != null)
+                if (product.ImageUpload != null && product.Image != DefaultImageName)
                 {
-                    string uploadDir = Path.Combine(webHostEnvironment.WebRootPath, "media/products");
-
-                    if (!string.Equals(product.Image, "noimage.png")) 
-                    {
-                        string oldImagePath = Path.Combine(uploadDir, product.Image);
-                        if (System.IO.File.Exists(oldImagePath)) 
-                        {
-                            System.IO.File.Delete(oldImagePath);
-                        }
-                    }
-
-                    string imageName = Guid.NewGuid().ToString() + "_" + product.ImageUpload.FileName;
-                    string filePAth = Path.Combine(uploadDir, imageName);
-                    FileStream fs = new FileStream(filePAth, FileMode.Create);
-                    await product.ImageUpload.CopyToAsync(fs);
-                    fs.Close();
-                    product.Image = imageName;
+                    var image = await imageProvider.AddOrUpdateAsync(product.Image, product.ImageUpload, ImagesCatalogName);
+                    product.Image = image;
                 }
 
                 _context.Update(product);
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "The product has been edited";
-
                 return RedirectToAction("index");
             }
 
@@ -187,18 +163,12 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             if (product == null)
             {
                 TempData["Error"] = "The product does not exist";
-
             }
             else
             {
-                if (!string.Equals(product.Image, "noimage.png"))
+                if (!string.Equals(product.Image, DefaultImageName))
                 {
-                    string uploadDir = Path.Combine(webHostEnvironment.WebRootPath, "media/products");
-                    string oldImagePath = Path.Combine(uploadDir, product.Image);
-                    if (System.IO.File.Exists(oldImagePath))
-                    {
-                        System.IO.File.Delete(oldImagePath);
-                    }
+                    imageProvider.Delete(product.Image, ImagesCatalogName);
                 }
 
                 _context.Products.Remove(product);

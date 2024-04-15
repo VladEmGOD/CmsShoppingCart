@@ -1,34 +1,35 @@
-﻿using CmsShoppingCart.Models.Authentication.OIDC;
+﻿using CmsShoppingCart.WebApp.Models.Authentication.OIDC;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System;
 using System.Threading.Tasks;
+using CmsShoppingCart.WebApp.Infrastucture;
+using CmsShoppingCart.WebApp.Infrastucture.Providers;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
-namespace CmsShoppingCart.Areas.Admin.Controllers;
+namespace CmsShoppingCart.WebApp.Areas.Admin.Controllers;
 
 [Area("Admin")]
-public class OIDCAuthenticationController : Controller
+public class OIDCAuthenticationController(
+    IAuthenticationSchemeProvider schemeProvider, 
+    IOptionsMonitorCache<OpenIdConnectOptions> optionsCache, 
+    CmsShoppingCartContext db, 
+    IMediaImageProvider imageProvider, 
+    OpenIdConnectPostConfigureOptions postConfigureOptions) : Controller
 {
-    private readonly IAuthenticationSchemeProvider _schemeProvider;
-    private readonly IOptionsMonitorCache<TestAuthenticationSchemeOptions> _optionsCache;
+    private string ImagesCatalogName = "sso-icons";
 
-    public OIDCAuthenticationController(IAuthenticationSchemeProvider schemeProvider, IOptionsMonitorCache<TestAuthenticationSchemeOptions> optionsCache)
+    [HttpGet]
+    public async Task<IActionResult> Index()
     {
-        _schemeProvider = schemeProvider;
-        _optionsCache = optionsCache;
+        var providers = await db.SSOIdentityProviders.ToListAsync();
+        return View(providers);
     }
 
     [HttpGet]
-    public IActionResult Index()
-    {
-        return View();
-    }
-
-    [HttpGet]
-    public IActionResult Add()
+    public IActionResult Create()
     {
         return View();
     }
@@ -36,39 +37,105 @@ public class OIDCAuthenticationController : Controller
     [HttpPost]
     public IActionResult Remove(string scheme)
     {
-        _schemeProvider.RemoveScheme(scheme);
-        _optionsCache.TryRemove(scheme);
+        schemeProvider.RemoveScheme(scheme);
+        optionsCache.TryRemove(scheme);
         return Redirect("/");
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Add(string scheme, string optionsMessage)
+    public async Task<IActionResult> Create(IdentityProviderCreateInput input)
     {
-        if (await _schemeProvider.GetSchemeAsync(scheme) == null)
+        if (!ModelState.IsValid)
+            return View(input);
+
+        string imageName = "noimage.png";
+
+        if (input.ImageUpload != null)
         {
-            _schemeProvider.AddScheme(new AuthenticationScheme(scheme, scheme, typeof(TestAuthenticationSchemeOptions)));
+            imageName = await imageProvider.SaveAsync(input.ImageUpload, ImagesCatalogName);
+        }
+
+        var provider = input.ToModel();
+        provider.Image = imageName;
+
+        db.Update(provider);
+        await db.SaveChangesAsync();
+        
+        var newProviderId = provider.Id.ToString();
+
+        if (await schemeProvider.GetSchemeAsync(newProviderId) == null)
+        {
+            schemeProvider.AddScheme(new AuthenticationScheme(newProviderId, provider.Name, typeof(OpenIdConnectHandler)));
         }
         else
         {
-            _optionsCache.TryRemove(scheme);
+            optionsCache.TryRemove(newProviderId);
         }
-        _optionsCache.TryAdd(scheme, new TestAuthenticationSchemeOptions { DisplayMessage = optionsMessage });
-        return Redirect("/");
+
+        var o = new OpenIdConnectOptions();
+        o.Authority = provider.Url;
+        o.ClientId = provider.ApplicationId;
+        o.ClientSecret = provider.ClientSecret;
+        o.MapInboundClaims = false;
+
+        o.Scope.Add("email");
+
+        postConfigureOptions.PostConfigure(newProviderId, o);
+        optionsCache.TryAdd(newProviderId, o);
+
+        TempData["Success"] = "The provider has been created";
+
+        return RedirectToAction("index");
+    }
+
+    public async Task<IActionResult> Edit(Guid id)
+    {
+        var provider = await db.SSOIdentityProviders.FirstOrDefaultAsync(p => p.Id == id);
+
+        if (provider == null)
+            return NotFound();
+
+        return View(new IdentityProviderEditInput(provider));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Update(string scheme, string optionsMessage)
+    public async Task<IActionResult> Edit(IdentityProviderEditInput input)
     {
-        if (await _schemeProvider.GetSchemeAsync(scheme) == null)
+        if (!ModelState.IsValid)
+            return View(input);
+
+        if (input.ImageUpload != null && input.Image != "noimage.png")
         {
-            _schemeProvider.AddScheme(new AuthenticationScheme(scheme, scheme, typeof(TestAuthenticationSchemeOptions)));
+            var newImageName = await imageProvider.AddOrUpdateAsync(input.Image, input.ImageUpload, ImagesCatalogName);
+            input.Image = newImageName;
         }
-        else
-        {
-            _optionsCache.TryRemove(scheme);
-        }
-        _optionsCache.TryAdd(scheme, new TestAuthenticationSchemeOptions { DisplayMessage = optionsMessage });
-        return Redirect("/");
+
+        var provider = input.ToModel();
+        db.SSOIdentityProviders.Update(provider);
+        await db.SaveChangesAsync();
+
+        return RedirectToAction("Index");
     }
 
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var provider = await db.SSOIdentityProviders.FindAsync(id);
+
+        if (provider == null)
+        {
+            TempData["Error"] = "The provider does not exist";
+            return StatusCode(500);
+        }
+
+        if (!string.Equals(provider.Image, "noimage.png"))
+        {
+            imageProvider.Delete(provider.Image, ImagesCatalogName);
+        }
+
+        db.SSOIdentityProviders.Remove(provider);
+        await db.SaveChangesAsync();
+
+        TempData["Success"] = "The provider has been deleted";
+
+        return RedirectToAction("Index");
+    }
 }

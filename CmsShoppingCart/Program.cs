@@ -1,4 +1,4 @@
-using CmsShoppingCart.Models;
+using CmsShoppingCart.WebApp.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CmsShoppingCart
+namespace CmsShoppingCart.WebApp
 {
     public class Program
     {

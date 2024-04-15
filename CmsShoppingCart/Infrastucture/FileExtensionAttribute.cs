@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CmsShoppingCart.Infrastucture
+namespace CmsShoppingCart.WebApp.Infrastucture
 {
     public class FileExtensionAttribute: ValidationAttribute
     {

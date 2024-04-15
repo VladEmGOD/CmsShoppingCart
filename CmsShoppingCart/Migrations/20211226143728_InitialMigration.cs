@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace CmsShoppingCart.Migrations
+namespace CmsShoppingCart.WebApp.Migrations
 {
     public partial class InitialMigration : Migration
     {
@@ -12,10 +12,10 @@ namespace CmsShoppingCart.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Contetnt = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Sorting = table.Column<int>(type: "int", nullable: false)
+                    ProviderName = table.Column<string>(type: "nvarchar(350)", nullable: false),
+                    ApplicationId = table.Column<string>(type: "nvarchar(350)", nullable: false),
+                    ProviderUrl = table.Column<string>(type: "nvarchar(350)", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -1,10 +1,18 @@
-﻿namespace CmsShoppingCart.Models.Authentication.OIDC;
+﻿using System;
+
+namespace CmsShoppingCart.WebApp.Models.Authentication.OIDC;
 
 public class IdentityProvider
 {
-    public string ProviderName { get; set; }
+    public Guid Id { get; set; }
+
+    public string Name { get; set; }
 
     public string ApplicationId { get; set; }
 
-    public string ProviderUrl { get; set; }
+    public string Url { get; set; }
+
+    public string ClientSecret { get; set; }
+
+    public string Image { get; set; }
 }

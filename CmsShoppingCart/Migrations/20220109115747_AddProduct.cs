@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace CmsShoppingCart.Migrations
+namespace CmsShoppingCart.WebApp.Migrations
 {
     public partial class AddProduct : Migration
     {

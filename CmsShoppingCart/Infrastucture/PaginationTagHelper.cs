@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
 using System.Text;
 
-namespace CmsShoppingCart.Infrastucture
+namespace CmsShoppingCart.WebApp.Infrastucture
 {
     public class PaginationTagHelper : TagHelper
     {

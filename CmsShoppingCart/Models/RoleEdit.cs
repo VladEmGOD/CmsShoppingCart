@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CmsShoppingCart.Models
+namespace CmsShoppingCart.WebApp.Models
 {
     public class RoleEdit
     {

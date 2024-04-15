@@ -1,12 +1,12 @@
-﻿using CmsShoppingCart.Infrastucture;
-using CmsShoppingCart.Models;
+﻿using CmsShoppingCart.WebApp.Infrastucture;
+using CmsShoppingCart.WebApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CmsShoppingCart.Controllers
+namespace CmsShoppingCart.WebApp.Controllers
 {
     public class CartController : Controller
     {

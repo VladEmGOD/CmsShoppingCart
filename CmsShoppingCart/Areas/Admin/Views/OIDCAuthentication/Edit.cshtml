@@ -1,0 +1,56 @@
+﻿@model CmsShoppingCart.WebApp.Models.Authentication.OIDC.IdentityProviderEditInput
+
+@{
+    ViewData["Title"] = "Edit OIDC provider";
+}
+
+<h1>Edit</h1>
+
+<h4>IdentityProvider</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Image" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ApplicationId" class="control-label"></label>
+                <input asp-for="ApplicationId" class="form-control" />
+                <span asp-validation-for="ApplicationId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Url" class="control-label"></label>
+                <input asp-for="Url" class="form-control" />
+                <span asp-validation-for="Url" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Image" class="control-label"> Current Image</label>
+                <img src="~/media/sso-icons/@Model.Image" width="64" alt="@Model.Image" />
+            </div>
+            <div class="form-group">
+                <label asp-for="ImageUpload" class="control-label">New provider image</label>
+                <input asp-for="ImageUpload" class="form-control" />
+                <img src="" id="imgpreview" alt="" class="pt-2" />
+                <span asp-validation-for="ImageUpload" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

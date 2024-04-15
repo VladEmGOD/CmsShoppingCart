@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CmsShoppingCart.Infrastucture
+namespace CmsShoppingCart.WebApp.Infrastucture
 {
     public static class SessionExtentions
     {

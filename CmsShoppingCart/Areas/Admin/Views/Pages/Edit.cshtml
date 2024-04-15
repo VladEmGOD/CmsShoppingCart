@@ -1,4 +1,4 @@
-﻿@model CmsShoppingCart.Models.Page
+﻿@model CmsShoppingCart.WebApp.Models.Page
 
 <h4>Edit Page</h4>
 <hr />
@@ -37,7 +37,14 @@
 {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script>
-        CKEDITOR.replace("Contetnt");
+        ClassicEditor
+            .create(document.querySelector('#Contetnt'))
+            .then(editor => {
+                console.log(editor);
+            })
+            .catch(error => {
+                console.error(error);
+            });
     </script>
 }
 

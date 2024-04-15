@@ -5,7 +5,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using System;
 
-namespace CmsShoppingCart.Models.Authentication.OIDC
+namespace CmsShoppingCart.WebApp.Models.Authentication.OIDC
 {
     public class TestAuthenticationSchemeOptions : AuthenticationSchemeOptions
     {

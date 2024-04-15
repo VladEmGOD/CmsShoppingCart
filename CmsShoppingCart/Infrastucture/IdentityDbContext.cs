@@ -1,4 +1,4 @@
-﻿namespace CmsShoppingCart.Infrastucture
+﻿namespace CmsShoppingCart.WebApp.Infrastucture
 {
     public class IdentityDbContext
     {

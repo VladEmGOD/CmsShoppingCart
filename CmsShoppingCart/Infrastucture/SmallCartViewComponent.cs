@@ -1,11 +1,11 @@
-﻿using CmsShoppingCart.Models;
+﻿using CmsShoppingCart.WebApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CmsShoppingCart.Infrastucture
+namespace CmsShoppingCart.WebApp.Infrastucture
 {
     public class SmallCartViewComponent : ViewComponent
     {

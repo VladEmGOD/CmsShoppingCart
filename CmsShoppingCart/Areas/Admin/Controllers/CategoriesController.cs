@@ -1,5 +1,5 @@
-﻿using CmsShoppingCart.Infrastucture;
-using CmsShoppingCart.Models;
+﻿using CmsShoppingCart.WebApp.Infrastucture;
+using CmsShoppingCart.WebApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CmsShoppingCart.Areas.Admin.Controllers
+namespace CmsShoppingCart.WebApp.Areas.Admin.Controllers
 {
     [Authorize(Roles = "Admin")]
     [Area("Admin")]

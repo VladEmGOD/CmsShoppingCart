@@ -1,4 +1,4 @@
-﻿@model CmsShoppingCart.Models.Authentication.Login
+﻿@model CmsShoppingCart.WebApp.Models.Authentication.LoginViewModel
 
 @{
     ViewData["Title"] = "Login";
@@ -30,6 +30,21 @@
             </div>
         </form>
     </div>
+    @foreach(var provider in Model.IdentityProviders)
+    {
+        <div class="col-md-10">
+            <form asp-action="LoginWithSSO">
+                <input type="hidden" name="providerId" value="@provider.Id"/>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-outline-secondary">
+                        <img src="~/media/sso-icons/@provider.Image" width="48" alt="@provider.Image" />
+                        <span>Login with @provider.Name</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+
 </div>
 
 @section Scripts {
