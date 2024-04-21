@@ -38,7 +38,7 @@ namespace CmsShoppingCart.WebApp.Infrastucture.Services
             o.ClientSecret = provider.ClientSecret;
             o.MapInboundClaims = false;
             o.SignInScheme = IdentityConstants.ExternalScheme;
-
+            
             o.Scope.Add("email");
 
             optionsCache.TryAdd(newProviderId, o);

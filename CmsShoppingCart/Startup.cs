@@ -63,15 +63,15 @@ namespace CmsShoppingCart.WebApp
                 //options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
                 .AddCookie();
-                //.AddOpenIdConnect(o =>
-                //    {
-                //        o.Authority = "https://dev-zax1yy8k40jn3rc4.us.auth0.com";
-                //        o.ClientId = "yJ8KAQC6DlugYRFhiZnmrDW26j3FoKGg";
-                //        o.ClientSecret = "PmkPu7SE3Mc-FIkBoD-lYqr02uUIqwithtErcdhz5qkaCF2bDeOIV8Vj5BcMGTTY";
-                //        o.MapInboundClaims = false;
+            //.AddOpenIdConnect(o =>
+            //    {
+            //        o.Authority = "https://dev-zax1yy8k40jn3rc4.us.auth0.com";
+            //        o.ClientId = "yJ8KAQC6DlugYRFhiZnmrDW26j3FoKGg";
+            //        o.ClientSecret = "PmkPu7SE3Mc-FIkBoD-lYqr02uUIqwithtErcdhz5qkaCF2bDeOIV8Vj5BcMGTTY";
+            //        o.MapInboundClaims = false;
 
-                //        o.Scope.Add("email");
-                //    });
+            //        o.Scope.Add("email");
+            //    });
 
             services.AddIdentity<AppUser, IdentityRole>(options => {
                 options.Password.RequiredLength = 4;

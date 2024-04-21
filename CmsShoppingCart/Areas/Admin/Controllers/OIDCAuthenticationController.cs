@@ -76,7 +76,10 @@ public class OIDCAuthenticationController(
         o.ClientId = provider.ApplicationId;
         o.ClientSecret = provider.ClientSecret;
         o.MapInboundClaims = false;
+        //o.Configuration = new Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration()
+        //{
 
+        //};
         o.Scope.Add("email");
 
         postConfigureOptions.PostConfigure(newProviderId, o);

@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Policy;
 using System.Threading.Tasks;
 
@@ -53,7 +54,8 @@ namespace CmsShoppingCart.WebApp.Controllers
                 AppUser appUser = new AppUser
                 {
                     UserName = user.UserName,
-                    Email = user.Email
+                    Email = user.Email,
+                    AuthenticationType = AuthenticationType.Internal,
                 };
 
                 IdentityResult result = await userManeger.CreateAsync(appUser, user.Password);
@@ -135,7 +137,7 @@ namespace CmsShoppingCart.WebApp.Controllers
 
         //POST /account/ExternalHandler
         [AllowAnonymous]
-        public async Task<IActionResult> ExternalHandler()
+        public async Task<IActionResult> ExternalHandler([FromQuery(Name = "providerId")] string providerId)
         {
             var result = await Request.HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
             var claimsDictionnary = result.Principal.Claims.ToDictionary(c => c.Type);
@@ -153,10 +155,12 @@ namespace CmsShoppingCart.WebApp.Controllers
 
             var newUser = new AppUser()
             {
-                Ocupation = "Admin",
+                Ocupation = "Webstore",
                 Id = Guid.NewGuid().ToString(),
                 UserName = name.Value,
                 Email = email.Value,
+                AuthenticationType = AuthenticationType.External,
+                IdentityProviderId = providerId
             };
 
             var registerResult = await userManeger.CreateAsync(newUser);
@@ -173,6 +177,21 @@ namespace CmsShoppingCart.WebApp.Controllers
         //GET /account/login
         public async Task<IActionResult> Logout()
         {
+            //var providers = await db.SSOIdentityProviders.ToListAsync();
+
+            //await HttpContext.SignOutAsync("Cookies");
+            //var prop = new AuthenticationProperties
+            //{
+            //    RedirectUri = "/"
+            //};
+            //// after signout this will redirect to your provided target
+
+            //foreach (var p in providers) 
+            //{
+            //    await HttpContext.SignOutAsync(p.Id.ToString(), prop);
+            //}
+            await HttpContext.SignOutAsync();
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
             await signInManager.SignOutAsync();
             return Redirect("/");
         }

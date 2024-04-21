@@ -12,10 +12,10 @@ namespace CmsShoppingCart.WebApp.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ProviderName = table.Column<string>(type: "nvarchar(350)", nullable: false),
-                    ApplicationId = table.Column<string>(type: "nvarchar(350)", nullable: false),
-                    ProviderUrl = table.Column<string>(type: "nvarchar(350)", nullable: false),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Slug = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Contetnt = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Sorting = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
