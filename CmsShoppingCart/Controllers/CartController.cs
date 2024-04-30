@@ -1,22 +1,19 @@
 ﻿using CmsShoppingCart.WebApp.Infrastucture;
 using CmsShoppingCart.WebApp.Models;
+using CmsShoppingCart.WebApp.Models.Authentication;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CmsShoppingCart.WebApp.Controllers
 {
-    public class CartController : Controller
+    public class CartController(CmsShoppingCartContext db, UserManager<AppUser> userManeger) : Controller
     {
-        private readonly CmsShoppingCartContext _context;
-
-        public CartController(CmsShoppingCartContext context)
-        {
-            _context = context;
-        }
-
         //GET /cart
         public IActionResult Index()
         {
@@ -35,7 +32,7 @@ namespace CmsShoppingCart.WebApp.Controllers
         
         public async Task<IActionResult> Add(int id)
         {
-            Product product = await _context.Products.FindAsync(id);
+            Product product = await db.Products.FindAsync(id);
 
             List<CartItem> cart = HttpContext.Session.GetJson<List<CartItem>>("Cart") ?? new List<CartItem>();
 
@@ -113,5 +110,44 @@ namespace CmsShoppingCart.WebApp.Controllers
             return Redirect(Request.Headers["Referer"].ToString());
         }
 
+        //GET /cart/clear
+        public async Task<IActionResult> Chechout()
+        {
+            var cart = HttpContext.Session.GetJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+
+            var orderItems = new List<OrderItem>();
+
+            foreach (var item in cart) 
+            {
+                orderItems.Add(new OrderItem(item));
+            }
+
+            var orderData = new OrderData();
+            orderData.Items = orderItems;
+            orderData.GrandTotal = orderItems.Sum(x => x.Price * x.Quantity);
+
+            var data = JsonSerializer.Serialize(orderData);
+
+            var order = new Order();
+            order.Id = new Guid();
+            order.Data = data;
+
+            var authClaim = User.Claims.FirstOrDefault(c => c.Type == ShopClaimTypes.AuthenticationScheme);
+
+            if (authClaim is null)
+            {
+                var appUser = await userManeger.FindByNameAsync(User.Identity.Name);
+                order.UserId = appUser.Id;
+            }
+            else 
+            {
+                var sid = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                order.UserId = sid.Value;
+            }
+
+            db.Orders.Add(order);
+            await db.SaveChangesAsync();
+            return this.Clear();
+        }
     }
 }

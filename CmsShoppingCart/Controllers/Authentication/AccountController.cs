@@ -1,4 +1,6 @@
-﻿using CmsShoppingCart.WebApp.Infrastucture;
+﻿using Auth0.AspNetCore.Authentication;
+using CmsShoppingCart.WebApp.Infrastucture;
+using CmsShoppingCart.WebApp.Infrastucture.Authentication;
 using CmsShoppingCart.WebApp.Models;
 using CmsShoppingCart.WebApp.Models.Authentication;
 using CmsShoppingCart.WebApp.Models.Authentication.OIDC;
@@ -10,13 +12,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Policy;
 using System.Threading.Tasks;
 
-namespace CmsShoppingCart.WebApp.Controllers
+namespace CmsShoppingCart.WebApp.Controllers.Authentication
 {
     [Authorize]
     public class AccountController : Controller
@@ -33,7 +36,7 @@ namespace CmsShoppingCart.WebApp.Controllers
                                 CmsShoppingCartContext db, IAuthenticationSchemeProvider schemeProvider)
         {
             this.userManeger = userManeger;
-            this.signInManager = singInManager; ;
+            signInManager = singInManager; ;
             this.passwordHasher = passwordHasher;
             this.db = db;
             this.schemeProvider = schemeProvider;
@@ -79,15 +82,12 @@ namespace CmsShoppingCart.WebApp.Controllers
 
         //GET /account/login
         [AllowAnonymous]
-        public async Task<IActionResult> Login(string returnUrl)
+        public IActionResult Login(string returnUrl)
         {
-            var identityProviders = await db.SSOIdentityProviders.ToListAsync();
-            var idpViewModels = identityProviders.Select(p => new IdentityProviderViewModel(p));
-
             var login = new LoginViewModel
             {
                 ReturnUrl = returnUrl,
-                IdentityProviders = idpViewModels,
+                IdentityProviders = [],
             };
 
             return View(login);
@@ -117,92 +117,76 @@ namespace CmsShoppingCart.WebApp.Controllers
             return View(login);
         }
 
-        //POST /account/LoginWithSSO
+        //POST /account/login
         [AllowAnonymous]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task LoginWithSSO(string providerId)
+        public async Task LoginWithSSO(string authenticationScheme, string returnUrl = "/")
         {
-            if (string.IsNullOrEmpty(providerId))
-            {
-                ModelState.AddModelError("", "Cannot find inentity provider with id: " + providerId);
-            }
+            if (authenticationScheme.IsNullOrEmpty())
+                throw new ArgumentException("Scheme cannot be null or empty", nameof(authenticationScheme));
 
-            var result = await Request.HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
+              .WithRedirectUri(returnUrl)
+              .Build();
 
-            if (!result.Succeeded)
-            {
-                await Request.HttpContext.ChallengeAsync(providerId, new AuthenticationProperties() { RedirectUri = "/account/ExternalHandler" });
-            }
+            await HttpContext.ChallengeAsync(
+              authenticationScheme,
+              authenticationProperties
+            );
         }
 
-        //POST /account/ExternalHandler
-        [AllowAnonymous]
-        public async Task<IActionResult> ExternalHandler([FromQuery(Name = "providerId")] string providerId)
-        {
-            var result = await Request.HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
-            var claimsDictionnary = result.Principal.Claims.ToDictionary(c => c.Type);
-
-            var name = claimsDictionnary["name"];
-            var email = claimsDictionnary["email"];
-
-            var appUser = await userManeger.FindByEmailAsync(email.Value);
-
-            if (appUser != null)
-            {
-                await signInManager.SignInWithClaimsAsync(appUser, false, result.Principal.Claims);
-                return Redirect("/");
-            }
-
-            var newUser = new AppUser()
-            {
-                Ocupation = "Webstore",
-                Id = Guid.NewGuid().ToString(),
-                UserName = name.Value,
-                Email = email.Value,
-                AuthenticationType = AuthenticationType.External,
-                IdentityProviderId = providerId
-            };
-
-            var registerResult = await userManeger.CreateAsync(newUser);
-
-            if (registerResult.Succeeded)
-            {
-                await signInManager.SignInWithClaimsAsync(newUser, false, result.Principal.Claims);
-            }
-
-            ModelState.AddModelError("", "Login with SSO failed!");
-            return Redirect("/");
-        }
-
-        //GET /account/login
+        //GET /account/Logout
         public async Task<IActionResult> Logout()
         {
-            //var providers = await db.SSOIdentityProviders.ToListAsync();
 
-            //await HttpContext.SignOutAsync("Cookies");
-            //var prop = new AuthenticationProperties
-            //{
-            //    RedirectUri = "/"
-            //};
-            //// after signout this will redirect to your provided target
+            var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
+              .WithRedirectUri(Url.Action("Index", "Home"))
+              .Build();
 
-            //foreach (var p in providers) 
-            //{
-            //    await HttpContext.SignOutAsync(p.Id.ToString(), prop);
-            //}
-            await HttpContext.SignOutAsync();
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+            var authClaim = User.Claims.FirstOrDefault(c => c.Type == ShopClaimTypes.AuthenticationScheme);
+            if (authClaim is not null)
+                await HttpContext.SignOutAsync(authClaim.Value, authenticationProperties);
+
             await signInManager.SignOutAsync();
+            await HttpContext.SignOutAsync();
             return Redirect("/");
         }
 
         //GET /account/edit
+        // [Authorize(Policy = "TestPolicy")]
+        [Authorize]
         public async Task<IActionResult> Edit()
         {
-            AppUser appUser = await userManeger.FindByNameAsync(User.Identity.Name);
-            UserEdit user = new UserEdit(appUser);
+            var viewModel = new UserEditViewModel();
+            var authClaim = User.Claims.FirstOrDefault(c => c.Type == ShopClaimTypes.AuthenticationScheme);
 
-            return View(user);
+            if (authClaim is null)
+            {
+                var appUser = await userManeger.FindByNameAsync(User.Identity.Name);
+                viewModel.EditUserInfo = new UserEdit(appUser);
+                viewModel.IsOIDCAuthentication = false;
+            }
+            else
+            {
+                viewModel.IsOIDCAuthentication = true;
+                viewModel.OIDCClaims.Add("Authentication type", authClaim.Value.ToString());
+
+                foreach (var claim in User.Claims)
+                {
+                    if (ShopClaimTypes.SupportedDotNetClaims.Contains(claim.Type))
+                    {
+                        var caption = ShopClaimTypeReadbleCaptions.GetTranslation(claim.Type);
+                        viewModel.OIDCClaims.Add(caption, claim.Value.ToString());
+                    }
+                    else if (claim.Type == "picture")
+                        viewModel.PictureUrl = claim.Value.ToString();
+                    else
+                        viewModel.OIDCClaims.Add(claim.Type, claim.Value.ToString());
+                }
+            }
+
+            return View(viewModel);
         }
 
         //POST /account/edit
@@ -211,6 +195,7 @@ namespace CmsShoppingCart.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(UserEdit user)
         {
+            var userT = User;
             AppUser appUser = await userManeger.FindByNameAsync(User.Identity.Name);
 
             if (ModelState.IsValid)

@@ -1,9 +1,10 @@
+using Auth0.AspNetCore.Authentication;
 using CmsShoppingCart.WebApp.Infrastucture;
 using CmsShoppingCart.WebApp.Infrastucture.Middlewares;
 using CmsShoppingCart.WebApp.Infrastucture.Providers;
 using CmsShoppingCart.WebApp.Infrastucture.Services;
 using CmsShoppingCart.WebApp.Models;
-
+using CmsShoppingCart.WebApp.Models.Authentication.OIDC;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -16,6 +17,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 
 namespace CmsShoppingCart.WebApp
@@ -33,7 +37,7 @@ namespace CmsShoppingCart.WebApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMemoryCache();
-            services.AddSession(options => 
+            services.AddSession(options =>
             {
                 //options.IdleTimeout = TimeSpan.FromSeconds(2);
                 //options.IdleTimeout = TimeSpan.FromDays(2);
@@ -44,36 +48,13 @@ namespace CmsShoppingCart.WebApp
             services.AddControllersWithViews();
 
             services.AddScoped<IMediaImageProvider, MediaImageProvider>();
-            services.AddScoped<IIdentityProvidersManager, IdentityProvidersManager>();
-            services.AddTransient<OIDCIdentityProvidersWiddleware>();
 
             services.AddDbContext<CmsShoppingCartContext>
                 (options => options.UseSqlServer
             (Configuration.GetConnectionString("CmsShoppingCartContext")));
 
-
-            services.AddAuthentication(options =>
+            services.AddIdentity<AppUser, IdentityRole>(options =>
             {
-                options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-                options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
-                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-
-                //options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                //options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                //options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-            })
-                .AddCookie();
-            //.AddOpenIdConnect(o =>
-            //    {
-            //        o.Authority = "https://dev-zax1yy8k40jn3rc4.us.auth0.com";
-            //        o.ClientId = "yJ8KAQC6DlugYRFhiZnmrDW26j3FoKGg";
-            //        o.ClientSecret = "PmkPu7SE3Mc-FIkBoD-lYqr02uUIqwithtErcdhz5qkaCF2bDeOIV8Vj5BcMGTTY";
-            //        o.MapInboundClaims = false;
-
-            //        o.Scope.Add("email");
-            //    });
-
-            services.AddIdentity<AppUser, IdentityRole>(options => {
                 options.Password.RequiredLength = 4;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
@@ -85,10 +66,65 @@ namespace CmsShoppingCart.WebApp
                 .AddEntityFrameworkStores<CmsShoppingCartContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddSingleton<OpenIdConnectPostConfigureOptions>();
-    }
+            var b = new AuthenticationBuilder(services);
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+            b.AddOpenIdConnect(SuportedAuthSchemas.Auth0, o =>
+            {
+                o.Authority = "https://dev-zax1yy8k40jn3rc4.us.auth0.com";
+                o.ClientId = "yJ8KAQC6DlugYRFhiZnmrDW26j3FoKGg";
+                o.ClientSecret = "PmkPu7SE3Mc-FIkBoD-lYqr02uUIqwithtErcdhz5qkaCF2bDeOIV8Vj5BcMGTTY";
+                o.CallbackPath = "/Auth0/signin-oidc";
+                o.Scope.Add("email");
+                o.UsePkce = true;
+                o.ResponseType = OpenIdConnectResponseType.Code;
+                o.SignInScheme = IdentityConstants.ApplicationScheme;
+
+                o.ClaimActions.Add(new SimpleClaimAction("AuthenticationType", SuportedAuthSchemas.Auth0));
+                o.TokenValidationParameters.RoleClaimType = "account_role";
+
+                o.Events = new OpenIdConnectEvents()
+                {
+                    OnRedirectToIdentityProviderForSignOut = context =>
+                    {
+                        var logoutUri = "/";
+                        context.Response.Redirect(logoutUri);
+                        context.HandleResponse();
+
+                        return Task.CompletedTask;
+                    }
+                };
+
+            });
+
+            b.AddOpenIdConnect(SuportedAuthSchemas.Okta, o =>
+            {
+                o.Authority = "https://dev-23347671.okta.com/oauth2/default";
+                o.ClientId = "0oagm239w2gKW6hCH5d7";
+                o.ClientSecret = "WvmopEmqYSv9-UwRjAobsq-HC3megEwrGBOTCn4mv8MWNrHVsRlAZZZOnB3RJRjX";
+                o.CallbackPath = "/Okta/signin-oidc";
+                o.Scope.Add("email");
+                o.UsePkce = true;
+                o.ResponseType = OpenIdConnectResponseType.Code;
+                o.SignInScheme = IdentityConstants.ApplicationScheme;
+
+                o.ClaimActions.Add(new SimpleClaimAction("AuthenticationType", SuportedAuthSchemas.Okta));
+                o.TokenValidationParameters.RoleClaimType = "account_role";
+
+                o.Events = new OpenIdConnectEvents()
+                {
+                    OnRedirectToIdentityProviderForSignOut = context =>
+                    {
+                        var logoutUri = "/";
+                        context.Response.Redirect(logoutUri);
+                        context.HandleResponse();
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -107,8 +143,8 @@ namespace CmsShoppingCart.WebApp
 
             app.UseSession();
 
-            app.UseMiddleware<OIDCIdentityProvidersWiddleware>();
-            
+            //app.UseMiddleware<OIDCIdentityProvidersWiddleware>();
+
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -119,6 +155,9 @@ namespace CmsShoppingCart.WebApp
 
                 endpoints.MapControllerRoute("Account", "account/",
                    defaults: new { controller = "Account", action = "index" });
+
+                endpoints.MapControllerRoute("Orders", "orders/",
+                   defaults: new { controller = "Orders", action = "index" });
 
                 endpoints.MapControllerRoute("cart", "cart/",
                     defaults: new { controller = "Cart", action = "index" });

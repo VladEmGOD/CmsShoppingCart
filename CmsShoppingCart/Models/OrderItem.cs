@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace CmsShoppingCart.WebApp.Models
 {
-    public class CartItem
+    public class OrderItem
     {
         public int ProductId { get; set; }
         public string PriductName { get; set; }
@@ -14,18 +14,18 @@ namespace CmsShoppingCart.WebApp.Models
         public decimal Total { get { return Quantity * Price; } }
         public string Image { get; set; }
 
-        public CartItem()
+        public OrderItem()
         {
                 
         }
 
-        public CartItem(Product product)
+        public OrderItem(CartItem cartItem)
         {
-            ProductId = product.Id;
-            PriductName = product.Name;
-            Price = product.Price;
-            Quantity = 1;
-            Image = product.Image;
+            ProductId = cartItem.ProductId;
+            PriductName = cartItem.PriductName;
+            Price = cartItem.Price;
+            Quantity = cartItem.Quantity;
+            Image = cartItem.Image;
         }
     }
 }

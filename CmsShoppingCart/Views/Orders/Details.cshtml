@@ -1,0 +1,34 @@
+﻿@model OrderData
+
+@{
+    ViewData["Title"] = "Edit Account";
+    Layout = "~/Views/Account/_Layout.cshtml";
+}
+
+@if (Model.Items.Count > 0)
+{
+
+    <table class="table">
+        <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.PriductName</td>
+                <td>@item.Quantity</td>
+                <td>@item.Price $<td>
+            </tr>
+        }
+
+        <tr>
+            <td class="text-right" colspan="5">Grand Total: @Model.GrandTotal $</td>
+        </tr>
+    </table>
+}
+else
+{
+    <h3 class="display-4 text-center">You don't have orders'</h3>
+}

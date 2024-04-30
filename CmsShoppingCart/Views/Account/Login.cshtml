@@ -30,20 +30,32 @@
             </div>
         </form>
     </div>
-    @foreach(var provider in Model.IdentityProviders)
-    {
-        <div class="col-md-10">
-            <form asp-action="LoginWithSSO">
-                <input type="hidden" name="providerId" value="@provider.Id"/>
-                <div class="form-group">
-                    <button type="submit" class="btn btn-outline-secondary">
-                        <img src="~/media/sso-icons/@provider.Image" width="48" alt="@provider.Image" />
-                        <span>Login with @provider.Name</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    }
+
+    <div class="col-md-10">
+        <form asp-controller="Account" asp-action="LoginWithSSO">
+            <input type="hidden" asp-for="ReturnUrl" />
+            <input type="hidden" asp-for="AuthenticationScheme" value="@SuportedAuthSchemas.Auth0" />
+            <div class="form-group">
+                <button type="submit" class="btn btn-outline-secondary">
+                    <img src="~/media/sso-icons/auth0-logo.png" width="48" alt="Auth0 logo" />
+                    <span>Login with Auth0</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-md-10">
+        <form asp-controller="Account" asp-action="LoginWithSSO">
+            <input type="hidden" asp-for="ReturnUrl" />
+            <input type="hidden" asp-for="AuthenticationScheme" value="@SuportedAuthSchemas.Okta" />
+            <div class="form-group">
+                <button type="submit" class="btn btn-outline-secondary">
+                    <img src="~/media/sso-icons/okta-logo.png" width="48" alt="Okta logo" />
+                    <span>Login with Okta</span>
+                </button>
+            </div>
+        </form>
+    </div>
 
 </div>
 

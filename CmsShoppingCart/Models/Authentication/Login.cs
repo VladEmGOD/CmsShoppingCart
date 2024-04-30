@@ -15,6 +15,7 @@ namespace CmsShoppingCart.WebApp.Models.Authentication
         public string Password { get; set; }
 
         public string ReturnUrl { get; set; }
+        public string AuthenticationScheme { get; set; }
 
         public IEnumerable<IdentityProviderViewModel> IdentityProviders { get; set; } = new List<IdentityProviderViewModel>();
     }

@@ -19,7 +19,7 @@
                 @Html.Raw(item.Description)
             </div>
             <p>
-                @item.Price.ToString("C2")
+                @item.Price $
             </p>
             <p>
                 <a asp-controller="Cart" asp-action="Add" asp-route-id="@item.Id" data-id="@item.Id"

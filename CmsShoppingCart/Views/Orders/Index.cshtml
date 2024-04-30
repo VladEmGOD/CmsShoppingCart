@@ -1,0 +1,33 @@
+﻿@model OrdersViewModel
+
+@{
+    ViewData["Title"] = "Orders overview";
+    Layout = "~/Views/Account/_Layout.cshtml";
+}
+
+@if (Model.Items.Count > 0)
+{
+
+    <table class="table">
+        <tr>
+            <th>Order id</th>
+            <th>Grand total</th>
+            <th></th>
+        </tr>
+        @foreach (var item in Model.Items)
+        {
+            <tr>    
+                <td>@item.Id</td>
+                <td>@item.GrandTotal $</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-light border border-dark">Details</a>
+                </td>
+            </tr>
+        }
+
+    </table>
+}
+else
+{
+    <h3 class="display-4 text-center">You don't have orders</h3>
+}
