@@ -70,10 +70,10 @@ namespace CmsShoppingCart.WebApp
 
             b.AddOpenIdConnect(SuportedAuthSchemas.Auth0, o =>
             {
-                o.Authority = "https://dev-zax1yy8k40jn3rc4.us.auth0.com";
-                o.ClientId = "yJ8KAQC6DlugYRFhiZnmrDW26j3FoKGg";
-                o.ClientSecret = "PmkPu7SE3Mc-FIkBoD-lYqr02uUIqwithtErcdhz5qkaCF2bDeOIV8Vj5BcMGTTY";
-                o.CallbackPath = "/Auth0/signin-oidc";
+                o.Authority = Configuration["SSO:Auth0:Authority"];
+                o.ClientId = Configuration["SSO:Auth0:ClientId"];
+                o.ClientSecret = Configuration["SSO:Auth0:ClientSecret"];
+                o.CallbackPath = Configuration["SSO:Auth0:CallbackPath"];
                 o.Scope.Add("email");
                 o.UsePkce = true;
                 o.ResponseType = OpenIdConnectResponseType.Code;
@@ -98,10 +98,10 @@ namespace CmsShoppingCart.WebApp
 
             b.AddOpenIdConnect(SuportedAuthSchemas.Okta, o =>
             {
-                o.Authority = "https://dev-23347671.okta.com/oauth2/default";
-                o.ClientId = "0oagm239w2gKW6hCH5d7";
-                o.ClientSecret = "WvmopEmqYSv9-UwRjAobsq-HC3megEwrGBOTCn4mv8MWNrHVsRlAZZZOnB3RJRjX";
-                o.CallbackPath = "/Okta/signin-oidc";
+                o.Authority = Configuration["SSO:Okta:Authority"];
+                o.ClientId = Configuration["SSO:Okta:ClientId"];
+                o.ClientSecret = Configuration["SSO:Okta:ClientSecret"];
+                o.CallbackPath = Configuration["SSO:Okta:CallbackPath"];
                 o.Scope.Add("email");
                 o.UsePkce = true;
                 o.ResponseType = OpenIdConnectResponseType.Code;
