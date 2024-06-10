@@ -181,4 +181,20 @@ namespace CmsShoppingCart.WebApp.Areas.Admin.Controllers
 
 
     }
+
+    [Authorize(Roles = "Admin")]
+    [Area("Admin")]
+    public class ShopController : Controller 
+    { 
+    }
+
+    [Area("Shop")]
+    public class ShopController1 : Controller
+    {
+        [Authorize(Roles = "Editor")]
+        public async Task<IActionResult> Index() 
+        {
+            return View();
+        }
+    }
 }
